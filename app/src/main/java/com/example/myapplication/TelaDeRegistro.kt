@@ -2,7 +2,6 @@ package com.example.myapplication
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,20 +22,13 @@ fun TelaDeRegistro(navController: NavController) {
     val context = LocalContext.current
     val dbHelper = remember { DatabaseAjudante(context) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // --- CORREÇÃO DO FUNDO APLICADA AQUI ---
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.bg_halloween_pattern),
             contentDescription = "Fundo de abóboras de Halloween",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        // ------------------------------------
-
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.Center,
@@ -45,10 +37,10 @@ fun TelaDeRegistro(navController: NavController) {
             Image(
                 painter = painterResource(id = R.drawable.img_witch),
                 contentDescription = "Bruxa voando",
-                modifier = Modifier.size(120.dp)
+                modifier = Modifier.size(200.dp)
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Text(text = "Crie sua Conta", fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
+            Text(text = "Crie sua Conta", fontSize = 24.sp, color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(24.dp))
             OutlinedTextField(
                 value = email,
@@ -57,7 +49,9 @@ fun TelaDeRegistro(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
                 )
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -69,7 +63,9 @@ fun TelaDeRegistro(navController: NavController) {
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
                 )
             )
             Spacer(modifier = Modifier.height(24.dp))
@@ -90,8 +86,12 @@ fun TelaDeRegistro(navController: NavController) {
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) { Text("Cadastrar", color = MaterialTheme.colorScheme.onPrimary) }
             Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = { navController.navigateUp() }) {
-                Text("Voltar", color = MaterialTheme.colorScheme.primary)
+            Button(
+                onClick = { navController.navigateUp() },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(text = "Voltar", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
     }

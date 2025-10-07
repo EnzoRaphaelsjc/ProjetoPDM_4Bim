@@ -6,13 +6,15 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -33,46 +35,54 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TelaMaratonaFilmes(navController: NavController) {
+fun TelaMaratonaFilmes(navController: NavController, userId: Int) {
     val context = LocalContext.current
     val dbAjudante = remember { DatabaseAjudante(context) }
     var listaDeFilmes by remember { mutableStateOf(emptyList<Filme>()) }
     var mostrarDialogAdicionar by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = Unit) {
-        listaDeFilmes = dbAjudante.getFilmes()
+    LaunchedEffect(key1 = userId) {
+        listaDeFilmes = dbAjudante.getFilmes(userId)
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        // --- CORREÇÃO DO FUNDO APLICADA AQUI ---
+    Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.bg_halloween_pattern),
             contentDescription = "Fundo de abóboras de Halloween",
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-        // ------------------------------------
-
         Scaffold(
             floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { mostrarDialogAdicionar = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                ) { Text("+", style = MaterialTheme.typography.headlineMedium) }
+                Column(horizontalAlignment = Alignment.End) {
+                    FloatingActionButton(
+                        onClick = { mostrarDialogAdicionar = true },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) { Text("+", style = MaterialTheme.typography.headlineMedium) }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    FloatingActionButton(
+                        onClick = { navController.navigate("fim_de_ano_screen") },
+                        shape = CircleShape,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.QuestionMark,
+                            contentDescription = "Ajuda/Informações",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
             },
             containerColor = Color.Transparent
         ) { padding ->
             Column(modifier = Modifier.fillMaxSize().padding(padding)) {
                 Text(
-                    "Minha Maratona de Terror",
+                    "Lista de filmes",
                     style = MaterialTheme.typography.headlineMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onPrimary
                     ),
                     modifier = Modifier.padding(16.dp)
                 )
@@ -82,11 +92,11 @@ fun TelaMaratonaFilmes(navController: NavController) {
                             filme = filme,
                             aoAtualizar = { filmeAtualizado ->
                                 dbAjudante.atualizarFilmeComoAssistido(filmeAtualizado.id, filmeAtualizado.assistido, filmeAtualizado.nota)
-                                listaDeFilmes = dbAjudante.getFilmes()
+                                listaDeFilmes = dbAjudante.getFilmes(userId)
                             },
                             aoExcluir = { idDoFilme ->
                                 dbAjudante.deletarFilme(idDoFilme)
-                                listaDeFilmes = dbAjudante.getFilmes()
+                                listaDeFilmes = dbAjudante.getFilmes(userId)
                                 Toast.makeText(context, "Filme excluído!", Toast.LENGTH_SHORT).show()
                             }
                         )
@@ -100,8 +110,8 @@ fun TelaMaratonaFilmes(navController: NavController) {
         DialogAdicionarFilme(
             aoDispensar = { mostrarDialogAdicionar = false },
             aoAdicionar = { titulo, ano, tags, dataPlanejada, imageUri ->
-                dbAjudante.adicionarFilme(titulo, ano, tags, dataPlanejada, imageUri)
-                listaDeFilmes = dbAjudante.getFilmes()
+                dbAjudante.adicionarFilme(titulo, ano, tags, dataPlanejada, imageUri, userId)
+                listaDeFilmes = dbAjudante.getFilmes(userId)
                 mostrarDialogAdicionar = false
                 Toast.makeText(context, "Filme adicionado!", Toast.LENGTH_SHORT).show()
             }
@@ -157,21 +167,20 @@ fun ItemFilme(
                     .size(80.dp, 120.dp)
                     .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop,
-                error = painterResource(id = R.drawable.img_pumpkin) // Placeholder de abóbora
+                error = painterResource(id = R.drawable.pumpkin)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(filme.titulo, style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onSurface))
                 Text("Ano: ${filme.ano} | Gênero: ${filme.tags}", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)))
                 Text("Planejado para: ${filme.dataPlanejada}", style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)))
-
                 if (filme.assistido) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         "ASSISTIDO! - Nota: ${filme.nota}/10",
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -211,7 +220,6 @@ fun DialogAdicionarFilme(aoDispensar: () -> Unit, aoAdicionar: (String, Int, Str
     var dataPlanejada by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
-
     val seletorDeImagemLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -220,7 +228,6 @@ fun DialogAdicionarFilme(aoDispensar: () -> Unit, aoAdicionar: (String, Int, Str
             imageUri = it
         }
     }
-
     val estadoDatePicker = rememberDatePickerState()
     var mostrarDatePicker by remember { mutableStateOf(false) }
 
@@ -300,7 +307,6 @@ fun DialogoNotaFilme(
 ) {
     var textoNota by remember { mutableStateOf("") }
     val context = LocalContext.current
-
     AlertDialog(
         onDismissRequest = aoDispensar,
         title = { Text("Avalie o Filme") },
